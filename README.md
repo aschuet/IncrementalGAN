@@ -4,7 +4,7 @@ This repository contains the implementation of Incremental GAN.
 
 ### Run
 
-To run the code in the repo, please download CelebA dataset from http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html and paste the images in "data/img_align_celeba/". You can edit GPU settings in "main_increment.py". Once that's done, you should be able to call "python main_increment.py"
+To run the code in the repo, please download CelebA dataset from http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html and paste the images in "data/img_align_celeba/". Once that's done, you should be able to call "python main_increment.py". Check out the arguments by adding "-h".
 
 ### Evaluate
 
@@ -12,4 +12,4 @@ Similarly, check "eval_increment.py" for GPU settings. You will also need to pro
 
 ### Acknowledgements
 
-The files "fid_score.py" and "inception.py" are taken/modified from https://github.com/mseitzer/pytorch-fid.
+The files "fid_score.py" and "inception.py" are taken/modified from https://github.com/mseitzer/pytorch-fid, kudos to the author.

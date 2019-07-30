@@ -143,9 +143,6 @@ class Inpainter:
 		self.G1_trainer = tf.train.AdamOptimizer(learning_rate = 2e-4, beta1 = 0.5, beta2 = 0.9).minimize(self.G1_loss, var_list = G1_vars)
 		self.G2_trainer = tf.train.AdamOptimizer(learning_rate = 2e-4, beta1 = 0.5, beta2 = 0.9).minimize(self.G2_loss, var_list = G2_vars)
 
-	def generate_mask(self):
-		return util.generate_box_mask(width = self.input_width, height = self.input_height, hole_size = 48, num_holes = 5)
-
 class Inpainter_wo_feedback:
 	def __init__(self, input_height, input_width):
 		# placeholders
@@ -195,6 +192,3 @@ class Inpainter_wo_feedback:
 		self.D2_trainer = tf.train.AdamOptimizer(learning_rate = 2e-4, beta1 = 0.5, beta2 = 0.9).minimize(self.D2_loss, var_list = D2_vars)
 		self.G1_trainer = tf.train.AdamOptimizer(learning_rate = 2e-4, beta1 = 0.5, beta2 = 0.9).minimize(self.G1_loss, var_list = G1_vars)
 		self.G2_trainer = tf.train.AdamOptimizer(learning_rate = 2e-4, beta1 = 0.5, beta2 = 0.9).minimize(self.G2_loss, var_list = G2_vars)
-
-	def generate_mask(self):
-		return util.generate_box_mask(width = self.input_width, height = self.input_height, hole_size = 48, num_holes = 5)

@@ -1,3 +1,4 @@
+import argparse
 import cv2
 import math
 import matplotlib.pyplot as plt
@@ -10,8 +11,32 @@ import time
 import model
 import util
 
-# GPU settings
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+# configs
+parser = argparse.ArgumentParser(description = "Train the Incremental GAN on CelebA data")
+parser.add_argument("--hole_size", default = 48, help = "Size of each mask hole")
+parser.add_argument("--hole_num", default = 5, help = "Number of mask holes")
+parser.add_argument("--batch_size", default = 16, help = "Batch size")
+parser.add_argument("--gpu", default = -1, help = "GPU ID")
+parser.add_argument("--checkpoint_dir", default = "celeba_gan_incr_checkpoints/", help = "Directory to store checkpoints, followed by /")
+parser.add_argument("--output_dir", default = "celeba_gan_incr_outputs/", help = "Directory to store outputs, followed by /")
+parser.add_argument("--log_path", default = "celeba_log_incr.txt", help = "Log file path")
+
+args = parser.parse_args()
+
+input_height = 216
+input_width = 176
+
+hole_size = int(args.hole_size)
+hole_num = int(args.hole_num)
+
+batch_size = int(args.batch_size)
+
+checkpoint_dir = str(args.checkpoint_dir)
+output_dir = str(args.output_dir)
+
+log_path = str(args.log_path)
+
+os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
 # load files
 train_files, test_files = util.get_celeba_paths()
@@ -21,19 +46,10 @@ tf.reset_default_graph()
 tf.set_random_seed(0)
 random.seed(0)
 
-# configs
-input_height = 216
-input_width = 176
-
-batch_size = 16
-
-checkpoint_dir = "celeba_gan_incr_checkpoints/"
-output_dir = "celeba_gan_incr_outputs/"
-
 # model
 inpainter = model.Inpainter(input_height, input_width)
 
-fpLog = open("celeba_log_incr.txt", "w")
+fpLog = open(log_path, "w")
 
 # prepare
 util.mkdir_if_needed(checkpoint_dir)
@@ -48,13 +64,14 @@ with tf.Session() as sess:
 	for epoch in range(10):
 		random.shuffle(train_files)
 
+		print("Epoch %d" % (epoch + 1))
 		fpLog.write("Epoch %d\n" % (epoch + 1))
 		fpLog.flush()
 
 		tic = time.clock()
 
 		# training
-		for i in range(0, len(train_files), batch_size):
+		for i in range(0, 2048, batch_size):
 			start_idx = i
 			end_idx = min(i + batch_size, len(train_files))
 
@@ -63,7 +80,7 @@ with tf.Session() as sess:
 
 			for j in range(start_idx, end_idx):
 				real_images_batch.append(image_loader(train_files[j]))
-				masks_batch.append(inpainter.generate_mask())
+				masks_batch.append(util.generate_box_mask(width = input_width, height = input_height, hole_size = hole_size, num_holes = hole_num))
 
 			real_images_batch = np.array(real_images_batch)
 			masks_batch = np.array(masks_batch)
@@ -102,7 +119,7 @@ with tf.Session() as sess:
 
 			cv2.imwrite(output_dir + "epoch%d/%d_real.png" % (epoch + 1, test_idx), image_array * 255.)
 
-			mask = inpainter.generate_mask()
+			mask = util.generate_box_mask(width = input_width, height = input_height, hole_size = hole_size, num_holes = hole_num)
 
 			real_images_batch.append(image_array)
 			masks_batch.append(mask)
@@ -112,7 +129,7 @@ with tf.Session() as sess:
 			real_images_batch = np.array(real_images_batch)
 			masks_batch = np.array(masks_batch)
 
-			outputs = sess.run([self.inpaint1, self.inpaint2, self.confidence1, self.confidence2], feed_dict = {
+			outputs = sess.run([inpainter.inpaint1, inpainter.inpaint2, inpainter.confidence1, inpainter.confidence2], feed_dict = {
 				inpainter.real_images: real_images_batch,
 				inpainter.masks: masks_batch
 			})

@@ -1,3 +1,4 @@
+import argparse
 import cv2
 import json
 import math
@@ -13,22 +14,37 @@ import time
 import model
 import util
 
-# GPU settings
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+# configs
+parser = argparse.ArgumentParser(description = "Train the Incremental GAN on CelebA data")
+parser.add_argument("--hole_size", default = 48, help = "Size of each mask hole")
+parser.add_argument("--hole_num", default = 5, help = "Number of mask holes")
+parser.add_argument("--epoch", default = 1, help = "Epoch to be evaluated")
+parser.add_argument("--gpu", default = -1, help = "GPU ID")
+parser.add_argument("--test_num", default = 20, help = "Number of test images")
+parser.add_argument("--checkpoint_dir", default = "celeba_gan_incr_checkpoints/", help = "Directory where checkpoints are stored, followed by /")
+parser.add_argument("--output_dir", default = "test_outputs/", help = "Directory to store outputs, followed by /")
+
+args = parser.parse_args()
+
+input_height = 216
+input_width = 176
+
+hole_size = int(args.hole_size)
+hole_num = int(args.hole_num)
+
+test_epoch = int(args.epoch)
+test_imgs = int(args.test_num)
+
+os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+
+checkpoint_dir = str(args.checkpoint_dir)
+output_dir = str(args.output_dir)
 
 # load files
 _, test_files = util.get_celeba_paths()
 image_loader = util.load_celeba_image
 
 random.seed(0)
-
-# configs
-input_height = 216
-input_width = 176
-test_epoch = 3
-
-checkpoint_dir = "celeba_gan_incr_checkpoints/"
-output_dir = "test_outputs/"
 
 # model
 inpainter = model.Inpainter(input_height, input_width)
@@ -61,7 +77,7 @@ with tf.Session() as sess:
 
 	saver.restore(sess, checkpoint_dir + "epoch%02d" % test_epoch)
 
-	test_idxs = random.sample(list(range(len(test_files))), 10)
+	test_idxs = random.sample(list(range(len(test_files))), test_imgs)
 
 	inpaint1_l2s = []
 	inpaint2_l2s = []
@@ -80,7 +96,7 @@ with tf.Session() as sess:
 		cv2.imwrite(output_dir + "%d_real.png" % (test_idx), image_array * 255.)
 		cv2.imwrite(output_dir + "real/%d.png" % (test_idx), image_array * 255.)
 
-		mask = util.generate_box_mask(width = input_width, height = input_height, hole_size = 48, num_holes = 5)
+		mask = util.generate_box_mask(width = input_width, height = input_height, hole_size = hole_size, num_holes = hole_num)
 
 		real_images_batch.append(image_array)
 		masks_batch.append(mask)
@@ -101,7 +117,7 @@ with tf.Session() as sess:
 			else:
 				outputs[i] = np.reshape(outputs[i], (input_height, input_width, 1))
 
-		cv2.imwrite("%d_inpaint_1.png" % (test_idx), outputs[0] * 255.)
+		cv2.imwrite(output_dir + "%d_inpaint_1.png" % (test_idx), outputs[0] * 255.)
 		cv2.imwrite(output_dir + "inpaint_1/%d.png" % (test_idx), outputs[0] * 255.)
 		cv2.imwrite(output_dir + "%d_inpaint_2.png" % (test_idx), outputs[1] * 255.)
 		cv2.imwrite(output_dir + "inpaint_2/%d.png" % (test_idx), outputs[1] * 255.)
