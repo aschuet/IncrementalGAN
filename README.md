@@ -1,6 +1,6 @@
 ## Incremental GAN
 
-This repository contains implementation of Incremental GAN.
+This repository contains the implementation of Incremental GAN.
 
 ### Run
 
