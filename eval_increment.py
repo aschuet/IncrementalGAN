@@ -46,6 +46,13 @@ def clear_folders():
 		if file.name.endswith(".png"):
 			os.unlink(file.path)
 
+# prepare
+util.mkdir_if_needed(output_dir)
+util.mkdir_if_needed(output_dir + "real")
+util.mkdir_if_needed(output_dir + "inpaint_1")
+util.mkdir_if_needed(output_dir + "inpaint_2")
+util.mkdir_if_needed(output_dir + "combine")
+
 # core
 with tf.Session() as sess:
 	sess.run(tf.global_variables_initializer())
@@ -110,13 +117,13 @@ with tf.Session() as sess:
 		inpaint1_l2s.append(inpaint1_l2)
 		inpaint2_l2s.append(inpaint2_l2)
 
-		cmd = ["python3", "fid_score.py", output_dir + "real/", output_dir + "inpaint_1/"]
+		cmd = ["python", "fid_score.py", output_dir + "real/", output_dir + "inpaint_1/"]
 		subprocess.Popen(cmd).wait()
 
 		with open("fid_score.txt", "r") as fp:
 			inpaint1_fid = float(fp.read())
 
-		cmd = ["python3", "fid_score.py", output_dir + "real/", output_dir + "inpaint_2/"]
+		cmd = ["python", "fid_score.py", output_dir + "real/", output_dir + "inpaint_2/"]
 		subprocess.Popen(cmd).wait()
 
 		with open("fid_score.txt", "r") as fp:

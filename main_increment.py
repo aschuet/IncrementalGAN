@@ -35,6 +35,10 @@ inpainter = model.Inpainter(input_height, input_width)
 
 fpLog = open("celeba_log_incr.txt", "w")
 
+# prepare
+util.mkdir_if_needed(checkpoint_dir)
+util.mkdir_if_needed(output_dir)
+
 # core
 with tf.Session() as sess:
 	sess.run(tf.global_variables_initializer())
@@ -85,8 +89,7 @@ with tf.Session() as sess:
 		fpLog.write("Training time = %lf\n" % (toc - tic))
 		fpLog.flush()
 
-		if not os.path.exists(output_dir + "epoch%d" % (epoch + 1)):
-			os.mkdir(output_dir + "epoch%d" % (epoch + 1))
+		util.mkdir_if_needed(output_dir + "epoch%d" % (epoch + 1))
 
 		# testing
 		test_idxs = random.sample(list(range(len(test_files))), 10)

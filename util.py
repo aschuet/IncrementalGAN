@@ -92,3 +92,10 @@ def soft_ones_like(tensor):
 
 def soft_labels(tensor):
 	return tf.maximum(tensor + tf.random_uniform(tf.shape(tensor), minval = -0.2, maxval = 0.2), 0)
+
+def mkdir_if_needed(dir_name):
+	if dir_name[-1] == "/":
+		dir_name = dir_name[:-1]
+
+	if not os.path.exists(dir_name):
+		os.mkdir(dir_name)
