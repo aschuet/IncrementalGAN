@@ -8,7 +8,7 @@ To run the code in the repo, please download CelebA dataset from http://mmlab.ie
 
 ### Evaluate
 
-Similarly, check "eval_increment.py" for GPU settings. You will also need to provide testing epoch as an argument "--epoch <num>". After that you can call "python eval_increment.py".
+Similarly, check "eval_increment.py" for GPU settings. You will also need to provide testing epoch as an argument "--epoch &lt;<num>&gt;". After that you can call "python eval_increment.py".
 
 ### Acknowledgements
 
