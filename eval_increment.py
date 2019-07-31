@@ -23,6 +23,8 @@ parser.add_argument("--gpu", default = -1, help = "GPU ID")
 parser.add_argument("--test_num", default = 20, help = "Number of test images")
 parser.add_argument("--checkpoint_dir", default = "celeba_gan_incr_checkpoints/", help = "Directory where checkpoints are stored, followed by /")
 parser.add_argument("--output_dir", default = "test_outputs/", help = "Directory to store outputs, followed by /")
+parser.add_argument("--wo-feedback", dest = "feedback", action = "store_false")
+parser.set_defaults(feedback = True)
 
 args = parser.parse_args()
 
@@ -47,7 +49,10 @@ image_loader = util.load_celeba_image
 random.seed(0)
 
 # model
-inpainter = model.Inpainter(input_height, input_width)
+if args.feedback:
+	inpainter = model.Inpainter(input_height, input_width)
+else:
+	inpainter = model.Inpainter_wo_feedback(input_height, input_width)
 
 def clear_folders():
 	for file in os.scandir(output_dir + "real/"):

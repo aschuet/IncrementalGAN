@@ -20,6 +20,8 @@ parser.add_argument("--gpu", default = -1, help = "GPU ID")
 parser.add_argument("--checkpoint_dir", default = "celeba_gan_incr_checkpoints/", help = "Directory to store checkpoints, followed by /")
 parser.add_argument("--output_dir", default = "celeba_gan_incr_outputs/", help = "Directory to store outputs, followed by /")
 parser.add_argument("--log_path", default = "celeba_log_incr.txt", help = "Log file path")
+parser.add_argument("--wo-feedback", dest = "feedback", action = "store_false")
+parser.set_defaults(feedback = True)
 
 args = parser.parse_args()
 
@@ -34,8 +36,6 @@ batch_size = int(args.batch_size)
 checkpoint_dir = str(args.checkpoint_dir)
 output_dir = str(args.output_dir)
 
-log_path = str(args.log_path)
-
 os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
 
 # load files
@@ -47,9 +47,14 @@ tf.set_random_seed(0)
 random.seed(0)
 
 # model
-inpainter = model.Inpainter(input_height, input_width)
+fpLog = open(args.log_path, "w")
 
-fpLog = open(log_path, "w")
+if args.feedback:
+	fpLog.write("Inpainter with feedback\n")
+	inpainter = model.Inpainter(input_height, input_width)
+else:
+	fpLog.write("Inpainter without feedback\n")
+	inpainter = model.Inpainter_wo_feedback(input_height, input_width)
 
 # prepare
 util.mkdir_if_needed(checkpoint_dir)
@@ -71,7 +76,7 @@ with tf.Session() as sess:
 		tic = time.clock()
 
 		# training
-		for i in range(0, 2048, batch_size):
+		for i in range(0, len(train_files), batch_size):
 			start_idx = i
 			end_idx = min(i + batch_size, len(train_files))
 
